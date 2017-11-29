@@ -12,7 +12,7 @@ from kggenfile import genkobj, gensobj, KERNEL_ID_0, event_register, create_root
     append_program_in_root, set_indent
 from parser.kgparse import KGGenType
 from parser.kgextra import kgen_utils_file_head, kgen_utils_file_checksubr, kgen_get_newunit, kgen_error_stop, \
-    kgen_utils_file_tostr, kgen_utils_array_sumcheck, kgen_rankthread
+    kgen_utils_file_tostr, kgen_utils_array_sumcheck, kgen_rankthread, kgen_mpifile
 
 KGUTIL = 'kgen_utils.f90'
 TPROF = 'tprof_mod.f90'
@@ -520,4 +520,5 @@ class Extractor(KGTool):
             f.write(kgen_get_newunit)
             f.write(kgen_error_stop)
             f.write(kgen_rankthread)
+            f.write(kgen_mpifile)
             f.write('END MODULE kgen_utils_mod\n')
