@@ -175,13 +175,15 @@ class Gen_S_Callsite_File(Kgen_Plugin):
         part_append_gensnode(ifopen, EXEC_PART, statements.Exit, attrs=attrs)
 
         #SUBROUTINE kgen_init_vars
-        attrs = {'name': 'kgen_init_vars', 'args': ['mpi_s', 'mpi_e', 'omp_s', 'omp_e', 'invoke_e', 'msize', \
+        #jgw# add kgen_mymid to argument list
+        attrs = {'name': 'kgen_init_vars', 'args': ['kgen_mymid', 'mpi_s', 'mpi_e', 'omp_s', 'omp_e', 'invoke_e', 'msize', \
             'osize', 'lockpath', 'last_invoke', 'isstop']}
         initvarsubr = part_append_gensnode(node, SUBP_PART, block_statements.Subroutine, attrs=attrs)
         part_append_comment(node, SUBP_PART, '')
 
+        #jgw# add kgen_mymid to argument list
         attrs = {'type_spec': 'INTEGER', 'attrspec': ['INTENT(IN)'], 'entity_decls': \
-            ['mpi_s', 'mpi_e', 'omp_s', 'omp_e', 'invoke_e', 'msize', 'osize'], }
+            ['kgen_mymid', 'mpi_s', 'mpi_e', 'omp_s', 'omp_e', 'invoke_e', 'msize', 'osize'], }
         part_append_gensnode(initvarsubr, DECL_PART, typedecl_statements.Integer, attrs=attrs)
 
         attrs = {'type_spec': 'INTEGER', 'attrspec': ['INTENT(INOUT)', 'DIMENSION(0:osize-1)'], 'entity_decls': ['last_invoke']}
@@ -216,11 +218,18 @@ class Gen_S_Callsite_File(Kgen_Plugin):
         #attrs = {'variable': 'temp_unit', 'sign': '=', 'expr': 'kgen_get_newunit()'}
         #part_append_gensnode(doopenmp, EXEC_PART, statements.Assignment, attrs=attrs)
 
+        #jgw# add ifmymid0 node and attach several things to it.
+        attrs = {'expr': 'kgen_mymid .EQ. 0'}
+        ifmymid0 = part_append_gensnode(doopenmp, EXEC_PART, block_statements.\
+IfThen, attrs=attrs)
+
         attrs = {'specs': ['NEWUNIT=temp_unit', 'FILE=lockpath(mpi_idx, openmp_idx)', 'STATUS="OLD"', 'IOSTAT=ierr']}
-        part_append_gensnode(doopenmp, EXEC_PART, statements.Open, attrs=attrs)
+        #jgw#
+        part_append_gensnode(ifmymid0, EXEC_PART, statements.Open, attrs=attrs)
 
         attrs = {'expr': 'ierr .EQ. 0'}
-        ifopenmp = part_append_gensnode(doopenmp, EXEC_PART, block_statements.IfThen, attrs=attrs)
+        #jgw#
+        ifopenmp = part_append_gensnode(ifmymid0, EXEC_PART, block_statements.IfThen, attrs=attrs)
 
         attrs = {'specs': [ 'UNIT=temp_unit', 'STATUS="DELETE"' ]}
         part_append_gensnode(ifopenmp, EXEC_PART, statements.Close, attrs=attrs)
@@ -605,11 +614,19 @@ class Gen_S_Callsite_File(Kgen_Plugin):
         part_append_gensnode(ifinit, EXEC_PART, statements.Assignment, attrs=attrs)
 
         for (mpi_s, mpi_e), (openmp_s, openmp_e), (invoke_s, invoke_e) in getinfo('invocations'):
-            attrs = {'designator': 'kgen_init_vars', 'items': ['INT(%s)'%mpi_s.replace('e', '(kgen_msize-1)'), \
+            #jgw# add kgen_mymid argument to call
+            attrs = {'designator': 'kgen_init_vars', 'items': ['kgen_mymid', 'INT(%s)'%mpi_s.replace('e', '(kgen_msize-1)'), \
                 'INT(%s)'%mpi_e.replace('e', '(kgen_msize-1)'), 'INT(%s)'%openmp_s.replace('e', '(kgen_osize-1)'), \
                 'INT(%s)'%openmp_e.replace('e', '(kgen_osize-1)'), 'INT(%s)'%invoke_e, 'kgen_msize', 'kgen_osize', 'kgen_lockpath', \
                 'kgen_last_invoke', 'kgen_isstop']}
             part_append_gensnode(ifinit, EXEC_PART, statements.Call, attrs=attrs)
+
+        #jgw# add mpi_barrier to avoid file race condition.
+        if getinfo('is_mpi_app'):
+            attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'\
+), 'kgen_ierr']}
+            namedpart_append_gensnode(node.kgen_kernel_id, BEFORE_CALLSITE, st\
+atements.Call, attrs=attrs)
 
         # check save
         if getinfo('is_openmp_app'):
@@ -939,15 +956,25 @@ class Gen_S_Callsite_File(Kgen_Plugin):
             attrs = {'specs': [ 'UNIT=kgen_stopunit', 'STATUS="KEEP"' ]}
             part_append_gensnode(ifopen, EXEC_PART, statements.Close, attrs=attrs)
  
+            #jgw# only check stop on rank 0
+            attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'\
+), 'kgen_ierr']}
+            part_append_gensnode(ifstop, EXEC_PART, statements.Call, attrs=att\
+rs)
+            attrs = {'expr': 'kgen_mymid == 0'}
+            ifzero = part_append_gensnode(ifstop, EXEC_PART, block_statements.\
+IfThen, attrs=attrs)
 
             for (mpi_s, mpi_e), (openmp_s, openmp_e), (invoke_s, invoke_e) in getinfo('invocations'):
                 attrs = {'designator': 'kgen_check_stop', 'items': ['INT(%s)'%mpi_s.replace('e', '(kgen_msize-1)'), \
                     'INT(%s)'%mpi_e.replace('e', '(kgen_msize-1)'), 'INT(%s)'%openmp_s.replace('e', '(kgen_osize-1)'), \
                     'INT(%s)'%openmp_e.replace('e', '(kgen_osize-1)'), 'kgen_msize', 'kgen_osize', \
                     '0', 'kgen_lockpath', 'kgen_isstop']}
-                part_append_gensnode(ifstop, EXEC_PART, statements.Call, attrs=attrs)
+                #jgw#
+                part_append_gensnode(ifzero, EXEC_PART, statements.Call, attrs=attrs)
 
-            attrs = {'expr': 'ALL(kgen_isstop)'}
+            #jgw# add kgen_mymid == 0 to if test
+            attrs = {'expr': 'ALL(kgen_isstop) .and. kgen_mymid == 0'}
             ifallstop = part_append_gensnode(ifstop, EXEC_PART, block_statements.IfThen, attrs=attrs)
 
             #attrs = {'variable': 'kgen_stopunit', 'sign': '=', 'expr': 'kgen_get_newunit()'}
@@ -981,16 +1008,37 @@ class Gen_S_Callsite_File(Kgen_Plugin):
 
             if getinfo('is_mpi_app'):
                 attrs = {'designator': 'SLEEP', 'items': ['5']}
-                part_append_gensnode(iflst, EXEC_PART, statements.Call, attrs=attrs)
+                #jgw#part_append_gensnode(iflst, EXEC_PART, statements.Call, attrs=attrs)
 
-                attrs = {'designator': 'mpi_abort', 'items': [getinfo('mpi_comm'), '0', 'kgen_ierr']}
-                part_append_gensnode(iflst, EXEC_PART, statements.Call, attrs=attrs)
+                #jgw#attrs = {'designator': 'mpi_abort', 'items': [getinfo('mpi_comm'), '0', 'kgen_ierr']}
+                #jgw#part_append_gensnode(iflst, EXEC_PART, statements.Call, attrs=attrs)
             else:
                 attrs = {'designator': 'SLEEP', 'items': ['1']}
                 part_append_gensnode(iflst, EXEC_PART, statements.Call, attrs=attrs)
 
                 attrs = {'code': '0'}
                 part_append_gensnode(iflst, EXEC_PART, statements.Stop, attrs=attrs)
+
+            #jgw# only check for finalization on rank 0.
+            if getinfo('is_mpi_app'):
+                attrs = {'expr': 'kgen_mymid == 0 .and. .not. ALL(kgen_isstop)\
+'}
+                ifallstop = part_append_gensnode(ifstop, EXEC_PART, block_stat\
+ements.IfThen, attrs=attrs)
+                attrs = {'designator': 'mpi_abort', 'items': [getinfo('mpi_com\
+m'), '0', 'kgen_ierr']}
+                part_append_gensnode(ifallstop, EXEC_PART, statements.Call, at\
+trs=attrs)
+
+                elseifallstop = part_append_gensnode(ifallstop, EXEC_PART, blo\
+ck_statements.Else, attrs=attrs)
+                attrs = {'designator': 'mpi_finalize', 'items': ['kgen_ierr']}
+                part_append_gensnode(ifallstop, EXEC_PART, statements.Call, at\
+trs=attrs)
+                attrs = {}
+                part_append_gensnode(ifallstop, EXEC_PART, statements.Stop, at\
+trs=attrs)
+            # jgw
 
             attrs = {'variable': 'kgen_invoke(0)', 'sign': '=', 'expr': 'kgen_invoke(0) + 1'}
             namedpart_append_gensnode(node.kgen_kernel_id, BEFORE_CALLSITE, statements.Assignment, attrs=attrs)
