@@ -419,7 +419,7 @@ class Gen_Typedecl_In_Module(Kgen_Plugin):
         for entity_name, entity_decl in zip(entity_names, stmt.entity_decls):
             if node.kgen_parent.name+entity_name in self.kernel_extern_reads: continue
 
-            if is_remove_state(entity_name, stmt): continue
+            #jgw#if is_remove_state(entity_name, stmt): continue
 
             self.kernel_extern_reads.append(node.kgen_parent.name+entity_name)
 
@@ -496,7 +496,7 @@ class Gen_Typedecl_In_Module(Kgen_Plugin):
 
         for entity_name, entity_decl in zip(entity_names, stmt.entity_decls):
             if node.kgen_parent.name+entity_name in self.state_extern_writes: continue
-            if is_remove_state(entity_name, stmt): continue
+            #jgw#if is_remove_state(entity_name, stmt): continue
 
             self.state_extern_writes.append(node.kgen_parent.name+entity_name)
 
