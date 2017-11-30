@@ -99,6 +99,12 @@ class Gen_K_Callsite_File(Kgen_Plugin):
         attrs = {'items': [ ( 'state', ('kgen_mpirank', 'kgen_openmptid', 'kgen_kernelinvoke', 'kgen_evalstage', 'kgen_warmupstage', 'kgen_mainstage') ) ]}
         part_append_genknode(node, DECL_PART, statements.Common, attrs=attrs)
 
+        #jgw# for mpi_allreduce
+        attrs = {'type_spec': 'INTEGER', 'entity_decls': ['send(1)=-1', 'recv(\
+1)=-1', 'kgen_ierr']}
+        part_append_gensnode(node, DECL_PART, typedecl_statements.Integer, att\
+rs=attrs)
+
         part_append_comment(node, DECL_PART, '')
 
         namedpart_create_subpart(node, KERNEL_PBLOCK_READ_IN_LOCALS, EXEC_PART, index=0)
