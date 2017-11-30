@@ -60,7 +60,8 @@ class Gen_K_Driver(Kgen_Plugin):
         namedpart_link_part(node, DRIVER_CONTAINS_PART, CONTAINS_PART)
         namedpart_link_part(node, DRIVER_SUBP_PART, SUBP_PART)
 
-        attrs = {'name':'kgen_utils_mod', 'isonly': True, 'items':['kgen_get_newunit', 'kgen_error_stop', 'kgen_dp', 'kgen_array_sumcheck', 'kgen_rankthreadinvoke']}
+        #jgw# add kgen_mpifile
+        attrs = {'name':'kgen_utils_mod', 'isonly': True, 'items':['kgen_get_newunit', 'kgen_error_stop', 'kgen_dp', 'kgen_array_sumcheck', 'kgen_rankthreadinvoke','kgen_mpifile']}
         part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
 
         attrs = {'name':'tprof_mod', 'isonly': True, 'items':['tstart', 'tstop', 'tnull', 'tprnt']}
@@ -70,6 +71,9 @@ class Gen_K_Driver(Kgen_Plugin):
         #part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
 
         attrs = {'name':getinfo('topblock_stmt').name, 'isonly': True, 'items':[getinfo('parentblock_stmt').name]}
+        part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
+        #jgw# add use mpi
+        attrs = {'name':'mpi', 'isonly': False, 'items':[]}
         part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
         part_append_comment(node, USE_PART, '')
 
@@ -115,6 +119,10 @@ class Gen_K_Driver(Kgen_Plugin):
         attrs = {'type_spec': 'INTEGER', 'entity_decls': ['kgen_mpirank', 'kgen_openmptid', 'kgen_kernelinvoke']}
         part_append_gensnode(node, DECL_PART, typedecl_statements.Integer, attrs=attrs)
 
+        #jgw# add NProcs and ProcID
+        attrs = {'type_spec': 'INTEGER', 'entity_decls': ['NProcs', 'ProcID']}
+        part_append_gensnode(node, DECL_PART, typedecl_statements.Integer, attrs=attrs)
+
         attrs = {'type_spec': 'LOGICAL', 'entity_decls': ['kgen_evalstage', 'kgen_warmupstage', 'kgen_mainstage']}
         part_append_gensnode(node, DECL_PART, typedecl_statements.Logical, attrs=attrs)
 
@@ -132,6 +140,17 @@ class Gen_K_Driver(Kgen_Plugin):
             part_append_comment(node, EXEC_PART, 'END IF')
             part_append_comment(node, EXEC_PART, '')
 
+        #jgw# Add calls to MPI_Init, MPI_Comm_Size, MPI_Comm_Rank
+        attrs = {'designator': 'MPI_Init', 'items': ( 'kgen_ierr', ) }
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+        attrs = {'designator': 'MPI_Comm_Size', 'items': ( 'MPI_COMM_WORLD', '\
+NProcs', 'kgen_ierr', ) }
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+        attrs = {'designator': 'MPI_Comm_Rank', 'items': ( 'MPI_COMM_WORLD', '\
+ProcID', 'kgen_ierr', ) }
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+        part_append_comment(node, EXEC_PART, '')
+        #jgw#
 
         if getinfo('is_papi_enabled'):
             part_append_comment(node, EXEC_PART, '#ifdef KGEN_PAPI', style='rawtext')
@@ -201,7 +220,9 @@ class Gen_K_Driver(Kgen_Plugin):
 
         # eval
         attrs = {'loopcontrol': 'WHILE ( kgen_ierr_list .EQ. 0 )'}
-        doobj1 = part_append_genknode(node, EXEC_PART, block_statements.Do, attrs=attrs)
+        #jgw# Get rid of while loop
+        #doobj1 = part_append_genknode(node, EXEC_PART, block_statements.Do, attrs=attrs)
+        doobj1 = node
 
         attrs = {'items': ['kgen_filepath'], 'specs': ['UNIT = kgen_unit_list', 'FMT="(A)"', 'IOSTAT=kgen_ierr_list']}
         part_append_genknode(doobj1, EXEC_PART, statements.Read, attrs=attrs)
@@ -212,7 +233,9 @@ class Gen_K_Driver(Kgen_Plugin):
         attrs = {'variable': 'kgen_unit', 'sign': '=', 'expr': 'kgen_get_newunit()'}
         part_append_genknode(ifread, EXEC_PART, statements.Assignment, attrs=attrs)
 
-        attrs = {'designator': 'kgen_rankthreadinvoke', 'items': ( 'TRIM(ADJUSTL(kgen_filepath))', 'kgen_mpirank', 'kgen_openmptid', 'kgen_kernelinvoke' ) }
+        #jgw# call kgen_mpifile
+        #attrs = {'designator': 'kgen_rankthreadinvoke', 'items': ( 'TRIM(ADJUSTL(kgen_filepath))', 'kgen_mpirank', 'kgen_openmptid', 'kgen_kernelinvoke' ) }
+        attrs = {'designator': 'kgen_mpifile', 'items': ( 'kgen_filepath', 'ProcID', '0', '0' ) }
         part_append_genknode(ifread, EXEC_PART, statements.Call, attrs=attrs)
 
         attrs = {'specs': ['UNIT=kgen_unit', 'FILE=TRIM(ADJUSTL(kgen_filepath))', 'STATUS="OLD"', 'ACCESS="STREAM"', \
@@ -352,20 +375,25 @@ class Gen_K_Driver(Kgen_Plugin):
 
         part_append_comment(node, EXEC_PART, '')
 
+        #jgw# add ifzero node and replace several nodes below with ifzero
+        attrs = {'expr': 'ProcID == 0'}
+        ifzero = part_append_genknode(node, EXEC_PART, block_statements.IfThen\
+, attrs=attrs)
+
         attrs = {'items': ['""']}
-        part_append_genknode(node, EXEC_PART, statements.Write, attrs=attrs)
+        part_append_genknode(ifzero, EXEC_PART, statements.Write, attrs=attrs)
 
         attrs = {'items': ['"****************************************************"'], 'specs': [ '*', '"(A)"' ]}
-        part_append_genknode(node, EXEC_PART, statements.Write, attrs=attrs)
+        part_append_genknode(ifzero, EXEC_PART, statements.Write, attrs=attrs)
 
         attrs = {'items': ['"kernel execution summary: %s"'%getinfo('kernel_name')], 'specs': [ '*', '"(4X,A)"' ]}
-        part_append_genknode(node, EXEC_PART, statements.Write, attrs=attrs)
+        part_append_genknode(ifzero, EXEC_PART, statements.Write, attrs=attrs)
 
         attrs = {'items': ['"****************************************************"'], 'specs': [ '*', '"(A)"' ]}
-        part_append_genknode(node, EXEC_PART, statements.Write, attrs=attrs)
+        part_append_genknode(ifzero, EXEC_PART, statements.Write, attrs=attrs)
 
         attrs = {'expr': 'kgen_case_count == 0'}
-        ifcount = part_append_genknode(node, EXEC_PART, block_statements.IfThen, attrs=attrs)
+        ifcount = part_append_genknode(ifzero, EXEC_PART, block_statements.IfThen, attrs=attrs)
 
         attrs = {'items': ['"No data file is verified."'] }
         part_append_genknode(ifcount, EXEC_PART, statements.Write, attrs=attrs)
@@ -411,13 +439,18 @@ class Gen_K_Driver(Kgen_Plugin):
             part_append_comment(ifcount, EXEC_PART, '#endif', style='rawtext')
 
         attrs = {'items': ['"****************************************************"'], 'specs': [ '*', '"(A)"' ]}
-        part_append_genknode(node, EXEC_PART, statements.Write, attrs=attrs)
+        part_append_genknode(ifzero, EXEC_PART, statements.Write, attrs=attrs)
 
         if getinfo('add_mpi_frame'):
             part_append_comment(node, EXEC_PART, '')
             part_append_comment(node, EXEC_PART, 'Uncomment following mpi_finalize statement to finalize MPI.')
             part_append_comment(node, EXEC_PART, 'CALL mpi_finalize(kgen_ierr)')
             part_append_comment(node, EXEC_PART, '')
+
+        part_append_comment(node, EXEC_PART, '')
+        attrs = {'designator': 'MPI_Finalize', 'items': ( 'kgen_ierr', ) }
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+        part_append_comment(node, EXEC_PART, '')
 
         # Block Data
         attrs = {'name': 'KGEN'}
