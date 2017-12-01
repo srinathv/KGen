@@ -569,10 +569,12 @@ IfThen, attrs=attrs)
         attrs = {'variable': 'kgen_issave(:)', 'sign': '=', 'expr': '.FALSE.'}
         part_append_gensnode(ifinit, EXEC_PART, statements.Assignment, attrs=attrs)
 
-        attrs = {'variable': 'kgen_invoke(:)', 'sign': '=', 'expr': '1'}
+        #jgw# change initialization to 0
+        attrs = {'variable': 'kgen_invoke(:)', 'sign': '=', 'expr': '0'}
         part_append_gensnode(ifinit, EXEC_PART, statements.Assignment, attrs=attrs)
 
-        attrs = {'variable': 'kgen_last_invoke(:)', 'sign': '=', 'expr': '1'}
+        #jgw# change initialization to 0
+        attrs = {'variable': 'kgen_last_invoke(:)', 'sign': '=', 'expr': '0'}
         part_append_gensnode(ifinit, EXEC_PART, statements.Assignment, attrs=attrs)
 
         if getinfo('is_mpi_app'):
