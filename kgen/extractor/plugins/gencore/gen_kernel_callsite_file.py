@@ -102,8 +102,7 @@ class Gen_K_Callsite_File(Kgen_Plugin):
         #jgw# for mpi_allreduce
         attrs = {'type_spec': 'INTEGER', 'entity_decls': ['send(1)=-1', 'recv(\
 1)=-1', 'kgen_ierr']}
-        part_append_gensnode(node, DECL_PART, typedecl_statements.Integer, att\
-rs=attrs)
+        part_append_gensnode(node, DECL_PART, typedecl_statements.Integer, attrs=attrs)
 
         part_append_comment(node, DECL_PART, '')
 

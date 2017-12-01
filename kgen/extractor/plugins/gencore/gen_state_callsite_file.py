@@ -625,8 +625,7 @@ IfThen, attrs=attrs)
         if getinfo('is_mpi_app'):
             attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'\
 ), 'kgen_ierr']}
-            namedpart_append_gensnode(node.kgen_kernel_id, BEFORE_CALLSITE, st\
-atements.Call, attrs=attrs)
+            namedpart_append_gensnode(node.kgen_kernel_id, BEFORE_CALLSITE, statements.Call, attrs=attrs)
 
         # check save
         if getinfo('is_openmp_app'):
@@ -959,8 +958,7 @@ atements.Call, attrs=attrs)
             #jgw# only check stop on rank 0
             attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'\
 ), 'kgen_ierr']}
-            part_append_gensnode(ifstop, EXEC_PART, statements.Call, attrs=att\
-rs)
+            part_append_gensnode(ifstop, EXEC_PART, statements.Call, attrs=attrs)
             attrs = {'expr': 'kgen_mymid == 0'}
             ifzero = part_append_gensnode(ifstop, EXEC_PART, block_statements.\
 IfThen, attrs=attrs)
@@ -1023,21 +1021,15 @@ IfThen, attrs=attrs)
             if getinfo('is_mpi_app'):
                 attrs = {'expr': 'kgen_mymid == 0 .and. .not. ALL(kgen_isstop)\
 '}
-                ifallstop = part_append_gensnode(ifstop, EXEC_PART, block_stat\
-ements.IfThen, attrs=attrs)
-                attrs = {'designator': 'mpi_abort', 'items': [getinfo('mpi_com\
-m'), '0', 'kgen_ierr']}
-                part_append_gensnode(ifallstop, EXEC_PART, statements.Call, at\
-trs=attrs)
+                ifallstop = part_append_gensnode(ifstop, EXEC_PART, block_statements.IfThen, attrs=attrs)
+                attrs = {'designator': 'mpi_abort', 'items': [getinfo('mpi_comm'), '0', 'kgen_ierr']}
+                part_append_gensnode(ifallstop, EXEC_PART, statements.Call, attrs=attrs)
 
-                elseifallstop = part_append_gensnode(ifallstop, EXEC_PART, blo\
-ck_statements.Else, attrs=attrs)
+                elseifallstop = part_append_gensnode(ifallstop, EXEC_PART, block_statements.Else, attrs=attrs)
                 attrs = {'designator': 'mpi_finalize', 'items': ['kgen_ierr']}
-                part_append_gensnode(ifallstop, EXEC_PART, statements.Call, at\
-trs=attrs)
+                part_append_gensnode(ifallstop, EXEC_PART, statements.Call, attrs=attrs)
                 attrs = {}
-                part_append_gensnode(ifallstop, EXEC_PART, statements.Stop, at\
-trs=attrs)
+                part_append_gensnode(ifallstop, EXEC_PART, statements.Stop, attrs=attrs)
             # jgw
 
             attrs = {'variable': 'kgen_invoke(0)', 'sign': '=', 'expr': 'kgen_invoke(0) + 1'}
