@@ -77,15 +77,12 @@ class Verify_K_Callsite_File(Kgen_Plugin):
 
         #jgw# do mpi_allreduce on numOutTol
         part_append_comment(node, EXEC_PART, '')
-        attrs = {'variable': 'send(1)', 'sign': '=', 'expr': 'check_status%num\
-OutTol'}
+        attrs = {'variable': 'send(1)', 'sign': '=', 'expr': 'check_status%numOutTol'}
         part_append_genknode(node, EXEC_PART, statements.Assignment, attrs=attrs)
-        attrs = {'designator': 'mpi_allreduce', 'items': ['send','recv','1','M\
-PI_INT','MPI_MAX', getinfo('mpi_comm'), 'kgen_ierr']}
+        attrs = {'designator': 'mpi_allreduce', 'items': ['send','recv','1','MPI_INT','MPI_MAX', getinfo('mpi_comm'), 'kgen_ierr']}
         part_append_gensnode(node, EXEC_PART, statements.Call, attrs=attrs)
 
-        attrs = {'variable': 'check_status%numOutTol', 'sign': '=', 'expr': 'r\
-ecv(1)'}
+        attrs = {'variable': 'check_status%numOutTol', 'sign': '=', 'expr': 'recv(1)'}
         part_append_genknode(node, EXEC_PART, statements.Assignment, attrs=attrs)
 
         attrs = {'designator': 'mpi_comm_rank', 'items': [getinfo('mpi_comm'),\

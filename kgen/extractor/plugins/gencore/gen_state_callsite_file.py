@@ -220,8 +220,7 @@ class Gen_S_Callsite_File(Kgen_Plugin):
 
         #jgw# add ifmymid0 node and attach several things to it.
         attrs = {'expr': 'kgen_mymid .EQ. 0'}
-        ifmymid0 = part_append_gensnode(doopenmp, EXEC_PART, block_statements.\
-IfThen, attrs=attrs)
+        ifmymid0 = part_append_gensnode(doopenmp, EXEC_PART, block_statements.IfThen, attrs=attrs)
 
         attrs = {'specs': ['NEWUNIT=temp_unit', 'FILE=lockpath(mpi_idx, openmp_idx)', 'STATUS="OLD"', 'IOSTAT=ierr']}
         #jgw#
@@ -625,8 +624,7 @@ IfThen, attrs=attrs)
 
         #jgw# add mpi_barrier to avoid file race condition.
         if getinfo('is_mpi_app'):
-            attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'\
-), 'kgen_ierr']}
+            attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'), 'kgen_ierr']}
             namedpart_append_gensnode(node.kgen_kernel_id, BEFORE_CALLSITE, statements.Call, attrs=attrs)
 
         # check save
@@ -958,12 +956,10 @@ IfThen, attrs=attrs)
             part_append_gensnode(ifopen, EXEC_PART, statements.Close, attrs=attrs)
  
             #jgw# only check stop on rank 0
-            attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'\
-), 'kgen_ierr']}
+            attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'), 'kgen_ierr']}
             part_append_gensnode(ifstop, EXEC_PART, statements.Call, attrs=attrs)
             attrs = {'expr': 'kgen_mymid == 0'}
-            ifzero = part_append_gensnode(ifstop, EXEC_PART, block_statements.\
-IfThen, attrs=attrs)
+            ifzero = part_append_gensnode(ifstop, EXEC_PART, block_statements.IfThen, attrs=attrs)
 
             for (mpi_s, mpi_e), (openmp_s, openmp_e), (invoke_s, invoke_e) in getinfo('invocations'):
                 attrs = {'designator': 'kgen_check_stop', 'items': ['INT(%s)'%mpi_s.replace('e', '(kgen_msize-1)'), \
@@ -1021,8 +1017,7 @@ IfThen, attrs=attrs)
 
             #jgw# only check for finalization on rank 0.
             if getinfo('is_mpi_app'):
-                attrs = {'expr': 'kgen_mymid == 0 .and. .not. ALL(kgen_isstop)\
-'}
+                attrs = {'expr': 'kgen_mymid == 0 .and. .not. ALL(kgen_isstop)'}
                 ifallstop = part_append_gensnode(ifstop, EXEC_PART, block_statements.IfThen, attrs=attrs)
                 attrs = {'designator': 'mpi_abort', 'items': [getinfo('mpi_comm'), '0', 'kgen_ierr']}
                 part_append_gensnode(ifallstop, EXEC_PART, statements.Call, attrs=attrs)

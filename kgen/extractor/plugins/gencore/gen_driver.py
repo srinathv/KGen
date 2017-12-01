@@ -143,11 +143,9 @@ class Gen_K_Driver(Kgen_Plugin):
         #jgw# Add calls to MPI_Init, MPI_Comm_Size, MPI_Comm_Rank
         attrs = {'designator': 'MPI_Init', 'items': ( 'kgen_ierr', ) }
         part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
-        attrs = {'designator': 'MPI_Comm_Size', 'items': ( 'MPI_COMM_WORLD', '\
-NProcs', 'kgen_ierr', ) }
+        attrs = {'designator': 'MPI_Comm_Size', 'items': ( 'MPI_COMM_WORLD', 'NProcs', 'kgen_ierr', ) }
         part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
-        attrs = {'designator': 'MPI_Comm_Rank', 'items': ( 'MPI_COMM_WORLD', '\
-ProcID', 'kgen_ierr', ) }
+        attrs = {'designator': 'MPI_Comm_Rank', 'items': ( 'MPI_COMM_WORLD', 'ProcID', 'kgen_ierr', ) }
         part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
         part_append_comment(node, EXEC_PART, '')
         #jgw#
@@ -377,8 +375,7 @@ ProcID', 'kgen_ierr', ) }
 
         #jgw# add ifzero node and replace several nodes below with ifzero
         attrs = {'expr': 'ProcID == 0'}
-        ifzero = part_append_genknode(node, EXEC_PART, block_statements.IfThen\
-, attrs=attrs)
+        ifzero = part_append_genknode(node, EXEC_PART, block_statements.IfThen, attrs=attrs)
 
         attrs = {'items': ['""']}
         part_append_genknode(ifzero, EXEC_PART, statements.Write, attrs=attrs)
