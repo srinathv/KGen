@@ -124,6 +124,12 @@ class Gen_Typedecl_In_Module(Kgen_Plugin):
         #attrs = {'name':'IEEE_ARITHMETIC', 'nature': 'INTRINSIC', 'isonly': True, 'items':['ieee_is_normal']}
         #part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
 
+        #jgw# add use mpi
+        part_append_comment(node, USE_PART, 'forced mpi from gen_typedecl_in_module.py')
+        attrs = {'name':'mpi', 'isonly': False, 'items':[]}
+        part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
+        part_append_comment(node, USE_PART, '')
+
     def create_kernel_module_parts(self, node):
         in_subrobj = None
         in_subrname = get_module_in_readname(node.kgen_stmt)

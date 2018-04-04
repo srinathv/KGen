@@ -72,7 +72,9 @@ class Gen_K_Driver(Kgen_Plugin):
 
         attrs = {'name':getinfo('topblock_stmt').name, 'isonly': True, 'items':[getinfo('parentblock_stmt').name]}
         part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
+
         #jgw# add use mpi
+        part_append_comment(node, USE_PART, 'forced mpi from gen_driver.py')
         attrs = {'name':'mpi', 'isonly': False, 'items':[]}
         part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
         part_append_comment(node, USE_PART, '')
