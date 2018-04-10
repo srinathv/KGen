@@ -607,7 +607,7 @@ SUBROUTINE kgen_mpifile( str, rank, thread, cycle )
     ENDIF
 
     format = "("//trim(string_format)//","//trim(rank_format)//",A1,"//trim(thread_format)//",A1,"//trim(cycle_format)//")"
-    write(str,trim(format)) str(1:str_len), rank, ".", thread, ".", cycle
+    write(str,trim(format)) trim(str(1:str_len)), rank, ".", thread, ".", cycle
 
 END SUBROUTINE
 """
