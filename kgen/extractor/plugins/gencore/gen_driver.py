@@ -64,6 +64,12 @@ class Gen_K_Driver(Kgen_Plugin):
         attrs = {'name':'kgen_utils_mod', 'isonly': True, 'items':['kgen_get_newunit', 'kgen_error_stop', 'kgen_dp', 'kgen_array_sumcheck', 'kgen_rankthreadinvoke','kgen_mpifile']}
         part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
 
+        #jgw# add itt_notify
+        part_append_comment(node, USE_PART, '#ifdef __ITT_NOTIFY__', style='rawtext')
+        attrs = {'name':'ittnotify', 'isonly': False, 'items':[]}
+        part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
+        part_append_comment(node, USE_PART, '#endif', style='rawtext')
+
         attrs = {'name':'tprof_mod', 'isonly': True, 'items':['tstart', 'tstop', 'tnull', 'tprnt']}
         part_append_genknode(node, USE_PART, statements.Use, attrs=attrs)
 
@@ -141,6 +147,12 @@ class Gen_K_Driver(Kgen_Plugin):
             part_append_comment(node, EXEC_PART, '  CALL MPI_ABORT(MPI_COMM_WORLD, -1, kgen_ierr)')
             part_append_comment(node, EXEC_PART, 'END IF')
             part_append_comment(node, EXEC_PART, '')
+
+        #jgw# Add calls to itt_pause
+        part_append_comment(node, EXEC_PART, '#ifdef __ITT_NOTIFY__', style='rawtext')
+        attrs = {'designator': 'ITT_PAUSE', 'items':('',)}
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+        part_append_comment(node, EXEC_PART, '#endif', style='rawtext')
 
         #jgw# Add calls to MPI_Init, MPI_Comm_Size, MPI_Comm_Rank
         attrs = {'designator': 'MPI_Init', 'items': ( 'kgen_ierr', ) }

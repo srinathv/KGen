@@ -282,7 +282,7 @@ class Extractor(KGTool):
                 for i, compiler in enumerate(compilers):
                     self.write(f, 'FC_%d := %s'%(i, compiler))
                 # jgw
-                self.write(f, 'FC_0 := $(shell which mpiifort)')
+                self.write(f, 'FC_0 := ${shell which mpiifort}')
 
             if Config.kernel_option['FC_FLAGS']:
                 #self.write(f, 'FC_FLAGS := %s'%Config.kernel_option['FC_FLAGS'])
@@ -310,6 +310,12 @@ class Extractor(KGTool):
                         if add_opt not in new_options:
                             new_options.append(add_opt)
                     self.write(f, 'FC_FLAGS_SET_%d := %s'%(i, ' '.join(new_options)))
+
+            #jgw
+            self.write(f,'\n#INTEL_PATH=/usr/local/install/intel-2018-update2/vtune_amplifier')
+            self.write(f,'#FC_FLAGS_SET_0 += -D__ITT_NOTIFY__ -I${INTEL_PATH}/include/intel64')
+            self.write(f,'#LD_FLAGS = -L${INTEL_PATH}/lib64 -littnotify')
+            #jgw
 
             prerun_build_str = ''
             if Config.prerun['kernel_build']:
@@ -358,7 +364,9 @@ class Extractor(KGTool):
             #if len(compilers)>0 and not Config.kernel_option['FC']: fc_str += '_0'
             #if len(compiler_options)>0 and not Config.kernel_option['FC_FLAGS']: fc_flags_str += '_SET_0'
 
-            self.write(f, '%s${%s} ${%s} -o kernel.exe $^ %s %s'%(prerun_build_str, fc_str, fc_flags_str, link_flags, objects), t=True)
+            #jgw#
+            #self.write(f, '%s${%s} ${%s} -o kernel.exe $^ %s %s'%(prerun_build_str, fc_str, fc_flags_str, link_flags, objects), t=True)
+            self.write(f, '%s${%s} ${%s} -o kernel.exe $^ %s %s ${LD_FLAGS}'%(prerun_build_str, fc_str, fc_flags_str, link_flags, objects), t=True)
             self.write(f, '')
 
             if Config.model['types']['papi']['enabled']:
