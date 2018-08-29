@@ -668,7 +668,8 @@ class Gen_S_Callsite_File(Kgen_Plugin):
             #part_append_gensnode(ifsave, EXEC_PART, statements.Assignment, attrs=attrs)
 
             attrs = {'specs': ['NEWUNIT=kgen_save_unit(OMP_GET_THREAD_NUM())', 'FILE=TRIM(ADJUSTL(kgen_filepath(kgen_mymid, OMP_GET_THREAD_NUM())))', \
-                'STATUS="REPLACE"', 'ACCESS="STREAM"', 'FORM="UNFORMATTED"', 'ACTION="WRITE"', 'CONVERT="BIG_ENDIAN"', 'IOSTAT=kgen_ierr']}
+#jgw#                'STATUS="REPLACE"', 'ACCESS="STREAM"', 'FORM="UNFORMATTED"', 'ACTION="WRITE"', 'CONVERT="BIG_ENDIAN"', 'IOSTAT=kgen_ierr']}
+                'STATUS="REPLACE"', 'ACCESS="STREAM"', 'FORM="UNFORMATTED"', 'ACTION="WRITE"', 'IOSTAT=kgen_ierr']}
             part_append_gensnode(ifsave, EXEC_PART, statements.Open, attrs=attrs)
 
             attrs = {'variable': 'kgen_unit', 'sign': '=', 'expr': 'kgen_save_unit(OMP_GET_THREAD_NUM())'}
@@ -718,7 +719,8 @@ class Gen_S_Callsite_File(Kgen_Plugin):
             #part_append_gensnode(ifsave, EXEC_PART, statements.Assignment, attrs=attrs)
 
             attrs = {'specs': ['NEWUNIT=kgen_unit', 'FILE=TRIM(ADJUSTL(kgen_filepath(kgen_mymid, 0)))', \
-                'STATUS="REPLACE"', 'ACCESS="STREAM"', 'FORM="UNFORMATTED"', 'ACTION="WRITE"', 'CONVERT="BIG_ENDIAN"', 'IOSTAT=kgen_ierr']}
+#jgw#                'STATUS="REPLACE"', 'ACCESS="STREAM"', 'FORM="UNFORMATTED"', 'ACTION="WRITE"', 'CONVERT="BIG_ENDIAN"', 'IOSTAT=kgen_ierr']}
+                'STATUS="REPLACE"', 'ACCESS="STREAM"', 'FORM="UNFORMATTED"', 'ACTION="WRITE"', 'IOSTAT=kgen_ierr']}
             part_append_gensnode(ifsave, EXEC_PART, statements.Open, attrs=attrs)
 
             attrs = {'designator': 'kgen_error_stop', 'items': ['kgen_ierr', '"File open error: " // TRIM(ADJUSTL(kgen_filepath(kgen_mymid, 0)))']}

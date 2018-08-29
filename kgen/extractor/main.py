@@ -283,12 +283,19 @@ class Extractor(KGTool):
                     self.write(f, 'FC_%d := %s'%(i, compiler))
                 # jgw
                 self.write(f, 'FC_0 := ${shell which mpiifort}')
+                self.write(f, 'FC_0 := ${shell which mpif90}')
+                #self.write(f, 'FC_0 := ${shell which ftn}')
 
             if Config.kernel_option['FC_FLAGS']:
                 #self.write(f, 'FC_FLAGS := %s'%Config.kernel_option['FC_FLAGS'])
                 self.write(f, 'FC_FLAGS_SET_0 := %s'%Config.kernel_option['FC_FLAGS'])
             else:
                 #self.write(f, 'FC_FLAGS := ')
+                self.write(f, 'FC_FLAGS_SET_0 := -g -O2 -cpp') #jgw#
+                #self.write(f, 'FC_FLAGS_SET_0 := -g -O0 -cpp') #jgw#
+                #self.write(f, 'FC_FLAGS_SET_0 := -g -O0 -eF') #jgw#
+                #self.write(f, 'FC_FLAGS_SET_0 := -g -O2 -eF') #jgw#
+                #self.write(f, 'FC_FLAGS_SET_0 := -g -O3 -eF') #jgw#
                 for i, options in enumerate(compiler_options):
                     opt_list = options.split()
                     L = len(opt_list)
@@ -347,6 +354,10 @@ class Extractor(KGTool):
             #jgw#else:
             #jgw#    self.write(f, '%s./kernel.exe'%prerun_run_str, t=True)
             #jgw#self.write(f, '')
+
+            #jgw#
+            self.write(f, 'test: build')
+            self.write(f, '\tmpirun -n 32 ./kernel.exe | grep PASSED')
 
             if Config.model['types']['papi']['enabled']:
                 self.write(f, 'papi: build-papi')
