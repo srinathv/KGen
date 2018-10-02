@@ -319,7 +319,7 @@ class Extractor(KGTool):
                     self.write(f, 'FC_FLAGS_SET_%d := %s'%(i, ' '.join(new_options)))
 
             #jgw
-            self.write(f,'\n#INTEL_PATH=/usr/local/install/intel-2018-update2/vtune_amplifier')
+            self.write(f,'\n#INTEL_PATH=/usr/local/install/intel-2018-update3/vtune_amplifier')
             self.write(f,'#FC_FLAGS_SET_0 += -D__ITT_NOTIFY__ -I${INTEL_PATH}/include/intel64')
             self.write(f,'#LD_FLAGS = -L${INTEL_PATH}/lib64 -littnotify')
             #jgw

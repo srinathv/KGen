@@ -70,6 +70,10 @@ class Simple_Timing(Kgen_Plugin):
 
             part_append_comment(node, EXEC_PART, '#else', style='rawtext')
 
+
+        attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'), 'kgen_ierr']}
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+
         attrs = {'designator': 'SYSTEM_CLOCK', 'items': ['kgen_start_clock', 'kgen_rate_clock']}
         part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
 
@@ -117,6 +121,9 @@ class Simple_Timing(Kgen_Plugin):
 
         attrs = {'designator': 'SYSTEM_CLOCK', 'items': ['kgen_stop_clock', 'kgen_rate_clock']}
         part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+        attrs = {'designator': 'mpi_barrier', 'items': [getinfo('mpi_comm'), 'kgen_ierr']}
+        part_append_genknode(node, EXEC_PART, statements.Call, attrs=attrs)
+
 
         attrs = {'variable': 'kgen_measure', 'sign': '=', 'expr': '1.0D6*(kgen_stop_clock - kgen_start_clock)/DBLE(kgen_rate_clock)'}
         part_append_genknode(node, EXEC_PART, statements.Assignment, attrs=attrs)
